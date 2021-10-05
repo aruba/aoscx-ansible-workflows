@@ -1,0 +1,14 @@
+- hosts: all
+  collections:
+    - arubanetworks.aoscx
+  vars:
+    ansible_python_interpreter: /usr/bin/python3    #ensure this value matches your env python3 - this changes when venv
+    ansible_connection: network_cli
+  tasks:
+    - name: Configure SNMP through SSH/CLI
+      aoscx_config:
+        lines:
+          - snmp-server vrf default
+          - snmp-server community Sacramento
+          - snmp-server community Roseville
+        match: line

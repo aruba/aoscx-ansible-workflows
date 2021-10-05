@@ -1,0 +1,45 @@
+---
+- hosts: all
+  gather_facts: False
+  collections:
+    - arubanetworks.aoscx
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+    ansible_connection: network_cli
+  tasks:
+    - name: Upload via TFTP
+      aoscx_command:
+        commands:
+        - command: 'copy tftp://10.0.9.87/TL_10_08_0001CN.swi secondary vrf mgmt'
+          prompt:
+            - '.*Continue.*'
+          answer:
+            - y
+
+    - name: Show images
+      aoscx_command:
+        commands: ["show image"]
+
+- hosts: all
+  gather_facts: False
+  collections:
+    - arubanetworks.aoscx
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+    ansible_connection: network_cli
+  tasks:
+    - name: Upload via SFTP
+      aoscx_command:
+        commands:
+          - command: "copy sftp://chiapuzi@10.0.9.87/TL_10_07_0030O.swi primary vrf mgmt"
+            check_all: True
+            prompt:
+              - '.*\(y\/n\)\?.*'
+              - '.*password:.*'
+            answer:
+              - 'y'
+              - 'password'
+
+    - name: Show images
+      aoscx_command:
+        commands: ["show image"]

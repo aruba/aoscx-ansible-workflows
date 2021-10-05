@@ -1,0 +1,18 @@
+- hosts: all
+  collections:
+    - arubanetworks.aoscx
+  vars:
+    ansible_python_interpreter: /usr/bin/python3    
+  gather_facts: False
+  tasks:
+    - name: Create VLAN 300 with description and name
+      aoscx_vlan:
+        vlan_id: 300
+        name: UPLINK_VLAN
+        description: This is VLAN 300
+
+    - name: Create VLAN 200 with description and name
+      aoscx_vlan:
+        vlan_id: 200
+        name: UPLINK_VLAN
+        description: This is VLAN 200

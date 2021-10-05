@@ -1,0 +1,32 @@
+- hosts: all
+  collections:
+    - arubanetworks.aoscx
+  vars:
+    ansible_python_interpreter: /usr/bin/python3    #ensure this value matches your env python3 - this changes when venv
+    ansible_connection: network_cli
+  tasks:
+    - name: generate vlans based on template
+      template:
+        src: vlan_template.j2
+        dest: ./generated_vlans.txt
+      vars:
+        starting_vlan: 10
+        num_vlans: [1, 2, 3]
+
+    - name: configure vlans using template
+      aoscx_config:
+        src: ./generated_vlans.txt
+
+    - name: configure vlans through lines
+      aoscx_config:
+        lines:
+          - vlan99
+          - vlan89
+
+    - name: Execute show vlan on the switch
+      aoscx_command:
+        commands: ['show vlan']
+      register: show_vlan_output
+
+    - debug:
+        var: show_vlan_output

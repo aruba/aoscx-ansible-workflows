@@ -1,0 +1,83 @@
+---
+- hosts: all
+  gather_facts: False
+  collections:
+    - arubanetworks.aoscx
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  tasks:
+    - name: Configure ALLOW_HOSTS ACL
+      aoscx_acl:
+        name: ALLOW_HOSTS
+        type: ipv4
+        acl_entries:
+          10:
+            action: permit
+            src_ip: 172.38.49.127/255.255.255.255
+            protocol: any
+          20:
+            action: permit
+            src_ip: 172.38.49.127/255.255.255.255
+            protocol: any
+          30:
+            action: permit
+            src_ip: 172.38.49.126/255.255.255.255
+            protocol: any
+          40:
+            action: permit
+            src_ip: 172.38.49.125/255.255.255.255
+            protocol: any
+
+    - name: Configure ALLOW_FTP ACL
+      aoscx_acl:
+        name: ALLOW_FTP
+        type: ipv4
+        acl_entries:
+          10:
+            comment: "---FTP---"
+            action: permit
+            protocol: tcp
+            src_l4_port_max: 21
+            src_l4_port_min: 21
+          20:
+            action: permit
+            protocol: tcp
+            dst_l4_port_max: 21
+            dst_l4_port_min: 21
+          30:
+            action: permit
+            protocol: tcp
+            dst_l4_port_max: 20
+            dst_l4_port_min: 20
+          40:
+            action: permit
+            protocol: tcp
+            src_l4_port_max: 20
+            src_l4_port_min: 20
+
+    - name: Configure L3 interface 1/1/4 
+      aoscx_l3_interface:
+        interface: 1/1/4
+        description: Downlink Interface
+        ipv4: ['172.138.23.3/24']
+        admin_state: down
+
+    - name: Configure L3 interface 1/1/5
+      aoscx_l3_interface:
+        interface: 1/1/5
+        description: Downlink Interface
+        ipv4: ['172.139.29.3/24']
+        admin_state: down
+
+    - name: Apply ALLOW_HOSTS ACL to interface 1/1/4
+      aoscx_acl_interface:
+        acl_name: ALLOW_HOSTS
+        acl_type: ipv4
+        acl_interface_list: ["1/1/4"]
+
+    - name: Apply ALLOW_FTP ACL to interface 1/1/5
+      aoscx_acl_interface:
+        acl_name: ALLOW_FTP
+        acl_type: ipv4
+        acl_interface_list: ["1/1/5"]
+        acl_direction: out

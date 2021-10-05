@@ -1,0 +1,4 @@
+{% for vlan in num_vlans %}
+{% set vlan_id = vlan + starting_vlan %}
+vlan {{vlan_id}}
+{% endfor %}
