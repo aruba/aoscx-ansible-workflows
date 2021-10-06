@@ -8,6 +8,8 @@ Requirements
 * Python 3 or later
 * Ansible 2.9.0 or later
   * Refer to [Ansible's documentation](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) for installation steps
+  * **Known Issue**: error unable to decode json from response to exec_command seen while running SSH/CLI workflows, workaround is to downgrade `ansible.netcommon` collection with the following command:  
+    `ansible-galaxy collection install ansible.netcommon:1.5.0 -f`  
 * Minimum supported AOS-CX firmware version 10.04
 * Enable REST on your AOS-CX device with the following commands:
     ```
