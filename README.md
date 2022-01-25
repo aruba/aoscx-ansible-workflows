@@ -8,8 +8,9 @@ Requirements
 * Python 3 or later
 * Ansible 2.9.0 or later
   * Refer to [Ansible's documentation](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) for installation steps
-  * **Known Issue**: error unable to decode json from response to exec_command seen while running SSH/CLI workflows, workaround is to downgrade `ansible.netcommon` collection with the following command:  
-    `ansible-galaxy collection install ansible.netcommon:1.5.0 -f`  
+  * Ansible 2.10+ requires `ansible.netcommon` collection along with the `arubanetworks.aoscx` collection to be installed   
+    `ansible-galaxy collection install ansible.netcommon -f`  
+    `ansible-galaxy collection install arubanetworks.aoscx -f` 
 * Minimum supported AOS-CX firmware version 10.04
 * Enable REST on your AOS-CX device with the following commands:
     ```
