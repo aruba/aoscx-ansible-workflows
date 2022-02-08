@@ -1,0 +1,73 @@
+---
+# First play just captures FW version & hostname of the switch.
+
+- name: Get the switch version and hostname.
+  hosts: all
+  collections:
+    - arubanetworks.aoscx
+
+  gather_facts: False
+  vars:
+    ansible_connection: network_cli
+
+  tasks:
+    - name: Run the command to get output with the current Firmware version on the switch.
+      aoscx_command:
+        commands: ['show version']
+      register: vers
+  
+    - name: Parse the output from the switch and save the exact FW version to the variable.
+      set_fact:
+        vers: "{{ vers.stdout | join('') | regex_search('Version.*:.*GL.([0-9]{2}.){2}.[0-9]+') | replace('Version      : ','') }}"
+  
+    - debug:
+        msg: "{{ vers }}"
+  
+    - name: Run the command to get output with the Switch Hostname.
+      aoscx_command:
+        commands: ['show hostname']
+      register: hostname
+  
+    - name: Parse the output from the switch and save the exact Switch Hostname.
+      set_fact:
+        hostname: "{{ hostname.stdout | join('') }}"
+  
+    - debug:
+            msg: "{{ hostname }}"
+            
+
+# Second play is executed only if a FW upgrade is required.
+# If FW upgrade is required, it will take a backup of the running-config, upload FW to primary partition then boot the switch from primary partition with new FW.
+
+- name: Take a backup of running-config, upload FW to primary partition, then boot from new FW on primary partition, if an upgrade is required.
+  hosts: all
+  collections:
+    - arubanetworks.aoscx
+  gather_facts: False
+  vars:
+    target_version: 'GL.10.07.0021'
+  tasks:
+    - name: Take a backup of running-config, upload FW to primary partition, then boot from new FW on primary partition, if an upgrade is required
+      block:
+        - name: Copy Running Config to local (Ansible control node) as JSON file.
+          aoscx_backup_config:
+            config_name: 'running-config'
+            output_file: '/tmp/test-HK/glx/running-config_{{ hostname }}.json'
+  
+        - name: Upload FW to primary partition through local.
+          aoscx_upload_firmware:
+            partition_name: 'primary'
+            firmware_file_path: '/tmp/test-HK/glx/ArubaOS-CX_8325_10_07_0021.swi'
+  
+        - name: Boot the switch with the new image uploaded to primary partition.
+          aoscx_boot_firmware:
+            partition_name: 'primary'
+  
+        - name: Wait for the switch to come online after FW upgrade and reboot.
+          wait_for:
+            host: "{{ ansible_host }}"
+            port: 22
+            sleep: 10
+            timeout: 900
+      when: vers.find(target_version) == -1
+...

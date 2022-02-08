@@ -1,0 +1,29 @@
+---
+- hosts: all
+  gather_facts: False
+  collections:
+    - arubanetworks.aoscx
+  vars:
+    ansible_connection: network_cli
+  tasks:
+    - name: Enable auto-confirm and begin auto stacking process
+      aoscx_command:
+        commands: 
+          - auto-confirm
+          - conf
+          - vsf start-auto-stacking
+
+    - name: Pause for 25 seconds to allow for switch to reboot
+      pause:
+        seconds: 25
+
+    - name: Wait for Standby to join stack by entering Show vsf
+      aoscx_command:
+        commands:
+          - 'show vsf'
+        wait_for:
+          - result[0] contains "Standby"
+          #- result[0] contains "Member"
+        match: all
+        retries: 20
+        interval: 5

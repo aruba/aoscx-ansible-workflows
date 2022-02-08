@@ -1,0 +1,40 @@
+- hosts: all
+  collections:
+    - arubanetworks.aoscx
+  gather_facts: False
+  tasks:
+    - name: Upload firmware through local file
+      throttle: 1
+      aoscx_upload_firmware:
+        partition_name: 'primary'
+        firmware_file_path: '/var/lib/tftpboot/GL_10_08_1010.swi'
+      tags: ['test']
+
+    - name: Boot the switch with the new image uploaded to primary partition.
+      aoscx_boot_firmware:
+        partition_name: 'primary'
+    
+    - name: Pause for 10 seconds to allow for boot command
+      pause:
+        seconds: 10
+
+    - name: Wait for the switch to come online after FW upgrade and reboot.
+      wait_for:
+        host: "{{ ansible_host }}"
+        port: 22
+        sleep: 10
+        timeout: 900
+    
+    # Check each line card and verify if it's ready
+    - name: Wait for Line Cards to be Ready - max 5 min wait
+      aoscx_facts:
+        gather_subset: ['physical_interfaces']
+      register: facts_output
+      until:  facts_output['ansible_facts']['ansible_net_interfaces']['line_card,1/1']['1/1/1']['physical_interface_state'] is match("ready")
+      retries: 40
+      delay: 10
+
+    - name: Adding or Updating Banner
+      aoscx_banner:
+        banner_type: banner
+        banner: "Aruba Rocks!"
