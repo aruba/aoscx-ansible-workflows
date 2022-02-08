@@ -2,13 +2,13 @@
   collections:
     - arubanetworks.aoscx
   vars:
-    ansible_python_interpreter: /usr/bin/python3    
+    ansible_python_interpreter: /usr/bin/python3
   gather_facts: False
   tasks:
     - name: Create VLAN 300
       aoscx_vlan:
         vlan_id: 300
-        description: Building-3
+        name: Building-3
 
     - name: Create VLAN 400
       aoscx_vlan:
@@ -20,7 +20,7 @@
         interface: 1/1/3
         vlan_mode: trunk
         vlan_trunks: ['400','300']
-        native_vlan_id: '300'        
+        native_vlan_id: '300'
 
     - name: Configure Interface 1/1/4 - vlan access 300
       aoscx_l2_interface:
@@ -35,9 +35,8 @@
         trunk_allowed_all: True
         native_vlan_id: '400'
         native_vlan_tag: True
-        
-    - name: Disable Interface 1/1/6
-      aoscx_l2_interface:
-        interface: 1/1/6
-        admin_state: down
 
+    - name: Disable Interface 1/1/6
+      aoscx_interface:
+        name: 1/1/6
+        enabled: true

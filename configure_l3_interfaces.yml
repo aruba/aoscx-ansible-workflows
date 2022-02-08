@@ -2,7 +2,7 @@
   collections:
     - arubanetworks.aoscx
   vars:
-    ansible_python_interpreter: /usr/bin/python3    
+    ansible_python_interpreter: /usr/bin/python3
   gather_facts: False
   tasks:
     - name: Configure L3 interface 1/1/3 with IPv4 and IPv6 address
@@ -15,11 +15,16 @@
     - name: Configure IP Helper Address on Interface 1/1/3
       aoscx_l3_interface:
         interface: 1/1/3
-        ip_helper_address: ['172.1.2.32']        
+        ip_helper_address: ['172.1.2.32']
 
-    - name: Configure L3 interface 1/1/4 with IPv4 and shutdown
+    - name: Configure L3 interface 1/1/4 with IPv4
       aoscx_l3_interface:
         interface: 1/1/4
         description: Downlink Interface
         ipv4: ['172.138.23.3/24']
-        admin_state: down
+
+    - name: Administratively enable interfaces 1/1/3-1/1/4
+      aoscx_interface:
+        name: "{{item}}"
+        enabled: true
+      loop: ['1/1/3', '1/1/4']
