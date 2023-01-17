@@ -4,7 +4,6 @@
   collections:
     - arubanetworks.aoscx
   vars:
-    ansible_python_interpreter: /usr/bin/python3
     ansible_connection: network_cli
   tasks:
     - name: Upload via TFTP
@@ -25,7 +24,6 @@
   collections:
     - arubanetworks.aoscx
   vars:
-    ansible_python_interpreter: /usr/bin/python3
     ansible_connection: network_cli
   tasks:
     - name: Upload via SFTP
@@ -43,3 +41,31 @@
     - name: Show images
       aoscx_command:
         commands: ["show image"]
+
+- hosts: all
+  collections:
+    - arubanetworks.aoscx
+  gather_facts: False
+  vars:
+    ansible_connection: network_cli        
+  tasks:
+    - name: Optional - Accept authenticity Upload via SCP
+      aoscx_command:
+        commands:
+          - command: "copy scp://administrator@10.80.2.153/config.txt running-config vrf mgmt"
+            check_all: True
+            prompt:
+              - '.*\(yes\/no.*\)\?.*'
+            answer:
+              - 'yes'
+      ignore_errors: True
+      # If fingerprint prompt does not come up then this will fail which is okay
+
+    - name: Copy config via SCP
+      aoscx_command:
+        commands:
+          - command: "copy scp://administrator@10.80.2.153/config.txt running-config vrf mgmt"
+            prompt:
+              - '.*password:.*'
+            answer:
+              - 'password'          
