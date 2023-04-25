@@ -1,0 +1,45 @@
+---
+- hosts: all
+  gather_facts: False
+  collections:
+    - arubanetworks.aoscx
+  vars:
+    ansible_connection: network_cli
+  tasks:
+    - name: Configure VSF secondary member on Conductor
+      aoscx_config:
+        lines:
+          - do auto-confirm
+          - vsf secondary-member {{vsf_secondary | default('2')}}
+      when: vsf_role | default('conductor')  == 'conductor'
+
+    - name: Configure VSF Link 1 on Conductor
+      aoscx_config:
+        lines:
+          - link 1 {{vsf_link1 | default('1/1/26')}}
+        before:
+          - vsf member 1
+      when: vsf_role | default('conductor')  == 'conductor'
+
+    - name: Configure VSF Link 2 on Conductor
+      aoscx_config:
+        lines:
+          - link 2 {{vsf_link2}}
+        before:
+          - vsf member 1
+      when: vsf_role | default('conductor')  == 'conductor' and vsf_link2 is defined
+
+    - name: Pause for 25 seconds to allow for switch to reboot
+      pause:
+        seconds: 25
+
+    - name: Wait for Standby to join stack by entering Show vsf
+      aoscx_command:
+        commands:
+          - 'show vsf'
+        wait_for:
+          - result[0] contains "Standby"
+          #- result[0] contains "Member"
+        match: all
+        retries: 20
+        interval: 5
