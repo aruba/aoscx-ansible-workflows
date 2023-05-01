@@ -1,0 +1,33 @@
+- hosts: all
+  collections:
+    - arubanetworks.aoscx
+  vars:
+    ansible_aoscx_rest_version: 10.09 # Necessary for physical interfaces
+  tasks:
+    - name: >
+        Retrieve all information from the device and save into a variable
+        "facts_output".
+      aoscx_facts:
+      register: facts_output
+
+    - set_fact:
+        current_version_primary: "{{facts_output['ansible_facts']['ansible_net_software_images'].primary_image_version}}"
+
+    - set_fact:
+        current_version_secondary: "{{facts_output['ansible_facts']['ansible_net_software_images'].secondary_image_version}}"
+
+    - set_fact:
+        switch_hostname: "{{facts_output['ansible_facts']['ansible_net_platform_name']}}"
+
+    - set_fact:
+        system_mac: "{{facts_output['ansible_facts']['ansible_net_product_info']['chassis,1'].base_mac_address}}"
+
+    - debug:
+        var: current_version_primary
+    - debug:
+        var: current_version_secondary
+    - debug:
+        var: switch_hostname
+    - debug:
+        var: system_mac
+
