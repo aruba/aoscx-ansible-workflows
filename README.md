@@ -1,5 +1,5 @@
 # aoscx-ansible-workflows
-This repository contains ready-to-use workflows using the [AOS-CX Ansible Collection](https://galaxy.ansible.com/arubanetworks/aoscx). For detailed guides on using Ansible with AOS-CX visit us on our [Aruba Developer Hub](https://developer.arubanetworks.com/aruba-aoscx/docs/ansible-getting-started).
+This repository contains ready-to-use workflows using the [AOS-CX Ansible Collection](https://galaxy.ansible.com/arubanetworks/aoscx). For detailed guides on using Ansible with AOS-CX visit us on our [HPE Aruba Networking Developer Hub](https://developer.arubanetworks.com/aruba-aoscx/docs/ansible-getting-started).
 
 
 Requirements
@@ -41,7 +41,7 @@ Executing Workflows
   
 Contribution
 -------
-At Aruba Networks we're dedicated to ensuring the quality of our products, so if you find any
+At HPE Aruba Networking we're dedicated to ensuring the quality of our products, so if you find any
 issues at all please open an issue on our [Github](https://github.com/aruba/aoscx-ansible-workflows) and we'll be sure to respond promptly!  
 
 For more contribution opportunities follow our guidelines outlined in our [CONTRIBUTING.md](https://github.com/aruba/aoscx-ansible-workflows/blob/master/CONTRIBUTING.md)
