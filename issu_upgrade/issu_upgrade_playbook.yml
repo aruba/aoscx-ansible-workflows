@@ -1,0 +1,90 @@
+---
+- hosts: upgrade_issu_devices
+  gather_facts: False
+  vars:
+    ansible_host_key_checking: False
+  collections:
+    - arubanetworks.aoscx
+  tags:
+    - copy_firmware
+  tasks:
+    - name: Copy new firmware to devices
+      aoscx_command:
+        commands: 
+          - command: "copy tftp://{{ tftp_server_path }}/{{ x_image_version }} secondary vrf {{ vrf_name }}"
+            check_all: True
+            prompt:
+              - '.*\(y\/n\)\?.*'
+            answer:
+              - 'y'
+        wait_for:
+            - result[0] contains 'Verifying and writing system firmware...'
+        retries: 40
+        interval: 10
+      vars:
+        ansible_command_timeout: 400
+
+- hosts: upgrade_issu_devices
+  gather_facts: False
+  vars:
+    ansible_host_key_checking: False
+  collections:
+    - arubanetworks.aoscx
+  tags:
+    - validate_issu_readiness
+  tasks:
+    - name: Validate ISSU Readiness
+      aoscx_command:
+        commands: ['issu update-software validate']
+        wait_for:
+          - result[0] contains 'Current Image Valid               Pass'
+          - result[0] contains 'Target Image Valid                Pass'
+          - result[0] contains 'Target Version Compatible         Pass'
+          - result[0] contains 'Management Modules Ready          Pass'
+          - result[0] contains 'Line Modules Ready                Pass'
+          - result[0] contains 'Features Ready                    Pass'
+        retries: 40
+        interval: 10
+
+    - name: Run ISSU Update software
+      aoscx_command:
+        commands: 
+          - command: "issu update-software"
+            check_all: True
+            prompt:
+              - '.*\(y\/n\)\?.*'
+            answer:
+              - 'y'
+
+    - name: Check ISSU Status
+      aoscx_command:
+        commands: ['show issu']
+        wait_for:
+          - result[0] contains 'Prepare for Switchover              In Progress'
+        retries: 40
+        interval: 10
+
+- hosts: upgrade_issu_devices
+  gather_facts: False
+  vars:
+    ansible_host_key_checking: False
+  collections:
+    - arubanetworks.aoscx
+  tags:
+    - validate_and_confirm_issu_completion
+  tasks:
+    - name: Validate ISSU Completion
+      aoscx_command:
+        commands: ['show issu']
+        wait_for:
+          - result[0] contains 'ISSU Complete                       Complete'
+        retries: 2
+        interval: 10
+    - name: Confirm ISSU Completion
+      aoscx_command:
+        commands: ['issu update-software confirm']
+        wait_for:
+          - >-
+            result[0] contains 'The ISSU has been confirmed and the rollback timer has been cancelled.'
+            or result[0] contains 'No rollback timer has been started, no action was done.'
+            or result[0] contains 'No rollback timer has been configured, no action was done.'
